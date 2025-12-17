@@ -51,43 +51,48 @@ Good for iterating through large data sets, streams, or controlling async flow (
 
 Perfect Answer:
 CommonJS uses require, synchronous, Node-specific.
-ESM uses import/export, async, standardized, supports tree-shaking.
+ESM uses import/export, async, standardized (It works natively in browsers and modern JavaScript environments, not just Node.js), supports tree-shaking.
 
-9. What is tail-call optimization?
-
-Perfect Answer:
-A compiler optimization that reuses stack frames for tail-recursive calls.
-JS engines rarely apply it but conceptually it prevents stack overflows.
-
-10. How does prototypal inheritance work?
+9. How does prototypal inheritance work?
 
 Perfect Answer:
-Objects inherit directly from other objects via the [[Prototype]] chain, enabling shared methods and memory-efficient OOP without classical classes.
+Prototypal inheritance means objects inherit properties and methods directly from other objects through the Prototype chain, which enables shared behavior, efficient memory usage, and flexible object composition—without needing classical classes.
 
 🟦 SECTION 2 — Node.js Core
-11. Explain Node’s event loop in simple terms.
+10. Explain Node’s event loop in simple terms.
 
 Perfect Answer:
 The event loop schedules JS execution and processes callbacks.
 Async operations are offloaded to libuv threads and completed callbacks are queued back to the loop.
 
-12. What is backpressure in Node streams?
+11. What is backpressure in Node streams?
 
 Perfect Answer:
 It’s when a consumer can’t process data as fast as the producer emits it.
 Streams handle this automatically using the return value of write() and the drain event.
 
-13. How do you prevent blocking the event loop?
+12. How do you prevent blocking the event loop?
 
 Perfect Answer:
 Use worker threads, break long loops, use streaming, or offload CPU-heavy tasks to background processes.
 
-14. Difference between process.nextTick() and setImmediate()?
+13. Difference between process.nextTick() and setImmediate()?
 
 Perfect Answer:
 nextTick runs before the event loop continues;
 setImmediate runs after the poll phase.
 nextTick can starve the loop.
+
+14. What is libuv and what does it do?
+
+Perfect Answer:
+libuv is a multi-platform C library that provides Node.js with an event-driven, asynchronous I/O model. It handles low-level tasks like:
+
+- Handle the event loop
+- Asynchronous file and network
+- Manages Thread pool
+- Cross-platform abstractions (works on Linux, macOS, Windows)
+In short, libuv powers Node.js’s non-blocking I/O and event loop, enabling high concurrency and performance.
 
 15. What is the libuv thread pool used for?
 
@@ -97,8 +102,7 @@ Handles filesystem I/O, DNS, crypto, compression, and any CPU-heavy tasks not ha
 16. Explain Node.js clustering.
 
 Perfect Answer:
-Clustering starts multiple Node processes sharing a single port to leverage multiple CPU cores.
-Best combined with a process manager (PM2).
+Node.js clusters are implemented using the built-in `cluster` module. Clustering allows you to start multiple Node.js processes (workers) that share the same server port, enabling better CPU utilization on multi-core systems. Best combined with a process manager (PM2).
 
 17. How would you secure sensitive environment variables?
 
