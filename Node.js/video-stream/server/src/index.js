@@ -64,6 +64,7 @@ fastify.get('/video/:filename', async (request, reply) => {
   let end = fileSize - 1;
   let status = 200;
   let chunkSize = fileSize;
+  let stream;
 
   // If Range header is present, parse it for partial content (seeking/streaming)
   if (range) {
@@ -85,22 +86,20 @@ fastify.get('/video/:filename', async (request, reply) => {
 
     // Set headers for partial content
     reply
-      .code(status)
       .header('Content-Range', `bytes ${start}-${end}/${fileSize}`)
       .header('Accept-Ranges', 'bytes')
       .header('Content-Length', chunkSize)
       .header('Content-Type', 'video/mp4');
+      // Create a readable stream for the requested video segment
+      stream = fs.createReadStream(videoPath, { start, end });
   } else {
     // Set headers for full file
     reply
-      .code(status)
       .header('Content-Length', fileSize)
       .header('Content-Type', 'video/mp4')
       .header('Accept-Ranges', 'bytes');
+      stream = fs.createReadStream(videoPath);
   }
-
-  // Create a readable stream for the requested video segment
-  const stream = fs.createReadStream(videoPath, { start, end });
 
   // Error handling for file stream
   stream.on('error', (err) => {
@@ -120,7 +119,7 @@ fastify.get('/video/:filename', async (request, reply) => {
 
   console.log(`Unique sessions in last 5 min: ${recentSessions.size}`);
   // Send the stream to the client; Fastify handles piping and connection closing
-  return reply.send(stream);
+  return reply.send(stream).status(status);
 });
 
 const { exec } = require('child_process');
