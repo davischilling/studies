@@ -119,7 +119,7 @@ fastify.get('/video/:filename', async (request, reply) => {
 
   console.log(`Unique sessions in last 5 min: ${recentSessions.size}`);
   // Send the stream to the client; Fastify handles piping and connection closing
-  return reply.send(stream).status(status);
+  return reply.code(status).send(stream);
 });
 
 const { exec } = require('child_process');
