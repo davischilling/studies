@@ -10,42 +10,29 @@ fastify.register(require('@fastify/cors'), {
 const recentSessions = new Map();
 const SESSION_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
+// await linha de codigo que tbm loga algo
+// log depois
+
 // Video streaming endpoint
 // Handles HTTP Range requests for efficient video streaming and seeking
-fastify.get('/video/:filename', async (request, reply) => {
-  // Get session ID from query param
-  const sessionId = request.query.session;
-  if (sessionId) {
-    recentSessions.set(sessionId, Date.now());
-  }
-
-  // Clean up old sessions
-  for (const [sid, lastSeen] of recentSessions) {
-    if (Date.now() - lastSeen > SESSION_TIMEOUT) {
-      recentSessions.delete(sid);
-    }
-  }
-
-  // Performance monitoring (optional, for debugging/memory profiling)
-  const memBefore = process.memoryUsage().heapUsed;
-  const timeBefore = performance.now();
-
+fastify.get('/video/:filename', async (request, reply) => { // 1
   // Build the absolute path to the requested video file
-  const videoPath = path.join(__dirname, 'assets', request.params.filename);
+  const videoPath = path.join(__dirname, 'assets', request.params.filename); // 2
 
   let stat;
   try {
     // Get file stats (size, modification time, etc.)
-    stat = await fs.promises.stat(videoPath);
+    stat = await fs.promises.stat(videoPath); // 3
   } catch (err) {
     // File not found or inaccessible
-    reply.code(404).send("Video not found");
+    reply.code(404).send("Video not found"); // 4
     return;
   }
 
-  const fileSize = stat.size;
-  const range = request.headers.range; // Range header sent by browser for partial content
+  const fileSize = stat.size; // 5
+  const range = request.headers.range; // Range header sent by browser for partial content - 6
 
+  // 7
   // Set cache headers for client-side and CDN caching
   // Cache-Control: public, max-age=31536000 allows caching for 1 year
   reply.header('Cache-Control', 'public, max-age=31536000');
@@ -53,6 +40,7 @@ fastify.get('/video/:filename', async (request, reply) => {
   const etag = `"${stat.size}-${stat.mtime.getTime()}"`;
   reply.header('ETag', etag);
 
+  // 8
   // If client cache matches, return 304 Not Modified (saves bandwidth)
   if (request.headers['if-none-match'] === etag) {
     reply.code(304).send();
@@ -67,16 +55,16 @@ fastify.get('/video/:filename', async (request, reply) => {
   let stream;
 
   // If Range header is present, parse it for partial content (seeking/streaming)
-  if (range) {
+  if (range) { // 9
     // Example: Range: bytes=1000-2000
     const parts = range.replace(/bytes=/, '').split('-');
     start = parseInt(parts[0], 10);
     end = parts[1] ? parseInt(parts[1], 10) : end;
-    chunkSize = (end - start) + 1;
+    chunkSize = (end - start) + 1; // 11
     status = 206; // HTTP 206 Partial Content
 
     // Validate range to prevent invalid or malicious requests
-    if (start >= fileSize || end >= fileSize) {
+    if (start >= fileSize || end >= fileSize) { // 12
       reply
         .code(416) // Range Not Satisfiable
         .header('Content-Range', `bytes */${fileSize}`)
@@ -85,16 +73,16 @@ fastify.get('/video/:filename', async (request, reply) => {
     }
 
     // Set headers for partial content
-    reply
+    reply // 13
       .header('Content-Range', `bytes ${start}-${end}/${fileSize}`)
       .header('Accept-Ranges', 'bytes')
       .header('Content-Length', chunkSize)
       .header('Content-Type', 'video/mp4');
       // Create a readable stream for the requested video segment
       stream = fs.createReadStream(videoPath, { start, end });
-  } else {
+  } else { // 10
     // Set headers for full file
-    reply
+    reply // 14
       .header('Content-Length', fileSize)
       .header('Content-Type', 'video/mp4')
       .header('Accept-Ranges', 'bytes');
@@ -102,24 +90,15 @@ fastify.get('/video/:filename', async (request, reply) => {
   }
 
   // Error handling for file stream
-  stream.on('error', (err) => {
+  stream.on('error', (err) => { // 15
     console.error('Stream error:', err);
     // Respond with 500 Internal Server Error if streaming fails
     reply.code(500).send();
   });
 
-  // Log memory and time usage when streaming ends (optional)
-  stream.on('end', () => {
-    const memAfter = process.memoryUsage().heapUsed;
-    const timeAfter = performance.now();
-    const memDiffMB = (memAfter - memBefore) / 1024 / 1024;
-    console.log(`Memory used: ${memDiffMB.toFixed(3)} MB${memDiffMB < 0 ? ' (memory freed)' : ''}`);
-    console.log(`Time: ${timeAfter - timeBefore} ms`);
-  });
-
   console.log(`Unique sessions in last 5 min: ${recentSessions.size}`);
   // Send the stream to the client; Fastify handles piping and connection closing
-  return reply.code(status).send(stream);
+  return reply.code(status).send(stream); // 16
 });
 
 const { exec } = require('child_process');
