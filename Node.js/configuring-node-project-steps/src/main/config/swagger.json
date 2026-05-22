@@ -1,0 +1,12 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Configuring node project Documentation",
+    "description": "This is a reference API",
+    "version": "1.0.0",
+    "contact": {
+      "email": "davischilling.dev@gmail.com"
+    }
+  },
+  "paths": {}
+}
