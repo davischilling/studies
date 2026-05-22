@@ -1,0 +1,22 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/domain/hooks/*": ["domain/hooks/*"],
+      "@/domain/models/*": ["domain/models/*"],
+      "@/domain/services/*": ["domain/services/*"],
+      "@/domain/storage/*": ["domain/storage/*"],
+      "@/domain/use_cases/*": ["domain/use_cases/*"],
+      "@/domain/utils/*": ["domain/utils/*"],
+      "@/domain/validations/*": ["domain/validations/*"],
+      "@/presentation/assets/*": ["presentation/assets/*"],
+      "@/presentation/components/*": ["presentation/components/*"],
+      "@/presentation/contexts/*": ["presentation/contexts/*"],
+      "@/presentation/navigation/*": ["presentation/navigation/*"],
+      "@/presentation/screens/*": ["presentation/screens/*"],
+      "@/presentation/theme/*": ["presentation/theme/*"],
+    }
+  }
+}
